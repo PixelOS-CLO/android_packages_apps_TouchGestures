@@ -38,6 +38,7 @@ import android.os.PowerManager.WakeLock;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.VibrationEffect;
+import android.os.VibrationExtInfo;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
@@ -45,6 +46,10 @@ import android.util.SparseIntArray;
 import android.view.KeyEvent;
 
 import com.android.internal.os.DeviceKeyHandler;
+
+import org.sun.os.CustomVibrationAttributes;
+
+import vendor.sun.hardware.vibratorExt.Effect;
 
 public class KeyHandler implements DeviceKeyHandler {
 
@@ -349,8 +354,12 @@ public class KeyHandler implements DeviceKeyHandler {
             final boolean enabled = Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.TOUCHSCREEN_GESTURE_HAPTIC_FEEDBACK, 1) != 0;
             if (enabled) {
-                mVibrator.vibrate(VibrationEffect.createOneShot(50,
-                        VibrationEffect.DEFAULT_AMPLITUDE));
+                mVibrator.vibrateExt(new VibrationExtInfo.Builder()
+                        .setEffectId(Effect.OFF_SCREEN_GESTURE)
+                        .setFallbackEffectId(VibrationEffect.EFFECT_DOUBLE_CLICK)
+                        .setVibrationAttributes(
+                                CustomVibrationAttributes.VIBRATION_ATTRIBUTES_OFF_SCREEN_GESTURE)
+                        .build());
             }
         }
     }
