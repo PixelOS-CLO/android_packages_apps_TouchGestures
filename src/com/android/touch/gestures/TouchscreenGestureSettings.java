@@ -17,7 +17,6 @@
 
 package com.android.touch.gestures;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,7 +27,8 @@ import android.os.UserHandle;
 
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
-import androidx.preference.PreferenceFragment;
+import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import com.android.internal.lineage.hardware.LineageHardwareManager;
@@ -40,37 +40,39 @@ import com.android.touch.gestures.utils.ResourceUtils;
 import java.lang.System;
 
 import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity;
+import com.android.settingslib.widget.SettingsBasePreferenceFragment;
 
 public class TouchscreenGestureSettings extends CollapsingToolbarBaseActivity
-        implements PreferenceFragment.OnPreferenceStartFragmentCallback {
+        implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState == null) {
-            getFragmentManager().beginTransaction()
+            getSupportFragmentManager().beginTransaction()
                     .replace(com.android.settingslib.collapsingtoolbar.R.id.content_frame, getNewFragment())
                     .commit();
         }
     }
 
-    private PreferenceFragment getNewFragment() {
+    private PreferenceFragmentCompat getNewFragment() {
         return new MainSettingsFragment();
     }
 
     @Override
-    public boolean onPreferenceStartFragment(PreferenceFragment preferenceFragment,
+    public boolean onPreferenceStartFragment(PreferenceFragmentCompat preferenceFragment,
             Preference preference) {
-        Fragment instantiate = Fragment.instantiate(this, preference.getFragment(),
-            preference.getExtras());
-        getFragmentManager().beginTransaction().replace(
+        Fragment instantiate = getSupportFragmentManager().getFragmentFactory().instantiate(
+                getClassLoader(), preference.getFragment());
+        instantiate.setArguments(preference.getExtras());
+        getSupportFragmentManager().beginTransaction().replace(
                 com.android.settingslib.collapsingtoolbar.R.id.content_frame, instantiate).addToBackStack(preference.getKey()).commit();
 
         return true;
     }
 
-    public static class MainSettingsFragment extends PreferenceFragment {
+    public static class MainSettingsFragment extends SettingsBasePreferenceFragment {
 
         private static final String KEY_TOUCHSCREEN_GESTURE = "touchscreen_gesture";
         private static final String TOUCHSCREEN_GESTURE_TITLE = KEY_TOUCHSCREEN_GESTURE + "_%s_title";
